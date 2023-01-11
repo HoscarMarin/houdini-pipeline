@@ -94,15 +94,18 @@ class SaveFileApp(QtWidgets.QWidget):
             )
             return
 
-        textFilePath = os.path.join(
+        saveFilePath = os.path.join(
             self.filePathTextBox.text(),
             self.fileNameTextBox.text() +
-            '_v' + format(self.version, '03d') +
-            '.hip'
+            '_v' + format(self.version, '03d') 
         )
 
-        hou.hipFile.setName(textFilePath)
-        hou.hipFile.save(textFilePath)
+        f = open(saveFilePath + '.txt', 'w')
+        f.write(self.commentsTextBox.toPlainText())
+        f.close()
+
+        hou.hipFile.setName(saveFilePath + '.hip')
+        hou.hipFile.save(saveFilePath + '.hip')
 
         QtWidgets.QMessageBox.information(self, 
                 'File saved',
