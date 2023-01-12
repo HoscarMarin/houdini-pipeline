@@ -1,5 +1,5 @@
 from PySide2 import QtWidgets, QtCore
-import sys, os, glob
+import os, glob
 import hou
 
 class SaveFileApp(QtWidgets.QWidget):
@@ -94,6 +94,7 @@ class SaveFileApp(QtWidgets.QWidget):
             )
             return
 
+        #Save .hip and .txt with the comments
         saveFilePath = os.path.join(
             self.filePathTextBox.text(),
             self.fileNameTextBox.text() +
@@ -133,6 +134,7 @@ class SaveFileApp(QtWidgets.QWidget):
             versions = [int(os.path.splitext(os.path.basename(v))[0].split('_v')[-1]) for v in versionfiles]
             self.version = max(versions) + 1
         
+        self.extensionLabel.setText('_v' + format(self.version, '03d') + '.hip')
         self.versionLabel.setText("Version: " + format(self.version, '03d'))
 
 #Run app
