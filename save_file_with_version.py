@@ -8,6 +8,7 @@ class SaveFileApp(QtWidgets.QWidget):
         super(SaveFileApp, self).__init__()
         self.fileCollection = []
         self.version = 0
+        #self.extension = self.getLicense()
         self.initUI()
         self.checkDir()
 
@@ -99,7 +100,7 @@ class SaveFileApp(QtWidgets.QWidget):
             self.filePathTextBox.text(),
             self.fileNameTextBox.text() +
             '_v' + format(self.version, '03d') 
-        )
+        ).replace('\\', '/')
 
         f = open(saveFilePath + '.txt', 'w')
         f.write(self.commentsTextBox.toPlainText())
@@ -118,7 +119,8 @@ class SaveFileApp(QtWidgets.QWidget):
     
     def browsePath(self):
         folder = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
-        self.filePathTextBox.setText(folder)
+        if(folder != ""):
+            self.filePathTextBox.setText(folder)
 
     def checkDir(self):
         if(os.path.exists(self.filePathTextBox.text())):
@@ -126,6 +128,7 @@ class SaveFileApp(QtWidgets.QWidget):
         self.checkFile()
 
     def checkFile(self):
+        #Check fields are not empty
         if(not self.fileNameTextBox.text()):
             return
         self.version = 1
@@ -136,6 +139,17 @@ class SaveFileApp(QtWidgets.QWidget):
         
         self.extensionLabel.setText('_v' + format(self.version, '03d') + '.hip')
         self.versionLabel.setText("Version: " + format(self.version, '03d'))
+
+    #Currently unused
+    def getLicense(self):
+        license = hou.licenseCategory()
+
+        if(license == hou.licenseCategoryType.Indie):
+            return '.hiplc'
+        elif(license == hou.licenseCategoryType.Education or license == hou.licenseCategoryType.Apprentice):
+            return '.hipnc'
+        else:
+            return '.hip'
 
 #Run app
 app = SaveFileApp()

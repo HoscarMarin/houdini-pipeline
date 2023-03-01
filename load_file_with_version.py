@@ -8,7 +8,7 @@ class LoadFileApp(QtWidgets.QWidget):
         self.initUI()
 
     def initUI(self):
-        #======================FILEPATH======================
+        #======================FILEPATH=====================
         self.filePathLabel = QtWidgets.QLabel("File Path:   ")
 
         self.filePathTextBox = QtWidgets.QLineEdit(hou.homeHoudiniDirectory() if hou.hipFile.isNewFile() else os.path.dirname(hou.hipFile.path()))
@@ -72,6 +72,7 @@ class LoadFileApp(QtWidgets.QWidget):
 
     def listFiles(self):
         unique_items = []
+        #Check selected path wasn't deleted
         if(os.path.exists(self.filePathTextBox.text())):
             files = glob.glob(os.path.join(self.filePathTextBox.text(), "*.hip"))
             items = [os.path.splitext(os.path.basename(i))[0].rsplit('_v')[0] for i in files]
@@ -95,15 +96,18 @@ class LoadFileApp(QtWidgets.QWidget):
     
     def readComments(self):
         self.commentsContentLabel.setText("")
-        commentsFile = os.path.join(self.filePathTextBox.text(), self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText() +'.txt')
+        commentsFile = os.path.join(self.filePathTextBox.text(), self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText() +'.txt').replace('\\', '/')
         if os.path.isfile(commentsFile):
             f = open(commentsFile, 'r')
             lines = f.read()
             self.commentsContentLabel.setText(lines)
 
     def openFile(self):
-        hipFileName = os.path.join(self.filePathTextBox.text(), self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText() +'.hip')
+        hipFileName = os.path.join(self.filePathTextBox.text(), self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText() +'.hip').replace('\\', '/')
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         hou.hipFile.load(hipFileName)
+        QtWidgets.QApplication.restoreOverrideCursor()
+
 
 #Run app
 app = LoadFileApp()
