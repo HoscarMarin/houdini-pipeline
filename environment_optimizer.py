@@ -1,8 +1,6 @@
 import hou
 import sys
 
-#C:/Users/hosca/OneDrive/Documentos/houdini19.5/houdini-pipeline/cube_with_a_light.hipnc
-
 if __name__ == "__main__":
 
     #Args handling
