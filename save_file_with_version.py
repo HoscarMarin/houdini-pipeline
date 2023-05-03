@@ -103,22 +103,38 @@ class SaveFileApp(QtWidgets.QWidget):
             '_v' + format(self.version, '03d') 
         ).replace('\\', '/')
 
-        commentsPath = os.path.join(self.filePathTextBox.text(), "comments.json")
-        if(os.path.exists(commentsPath)):
-            with open(commentsPath, 'r') as openfile:
-                lines = openfile.read()
-
-                commentsDict = json.loads(lines)
-                commentsDict[self.fileNameTextBox.text() + '_v' + format(self.version, '03d')] = self.commentsTextBox.toPlainText()
-        else:
-            commentsDict = {self.fileNameTextBox.text() + '_v' + format(self.version, '03d'), self.commentsTextBox.toPlainText()}
-
-        with open(commentsPath, "w") as outfile:
-            outfile.write(json.dumps(commentsDict, indent=4))
-        
-
         hou.hipFile.setName(saveFilePath + '.hip')
         hou.hipFile.save(saveFilePath + '.hip')
+
+        if(len(self.commentsTextBox.toPlainText()) > 0):
+            commentsPath = os.path.join(self.filePathTextBox.text(), "comments.json")
+            if(os.path.exists(commentsPath)):
+                with open(commentsPath, 'r') as openfile:
+                    lines = openfile.read()
+                    if(len(lines) > 0):
+                        try:
+                            commentsDict = json.loads(lines)
+                            commentsDict[self.fileNameTextBox.text() + '_v' + format(self.version, '03d')] = self.commentsTextBox.toPlainText()
+                        except:
+                            msg = QtWidgets.QMessageBox()
+                            msg.setIcon(QtWidgets.QMessageBox.Information)
+
+                            msg.setWindowTitle("JSON Error")
+                            msg.setText("Error while parsin {0}".format(commentsPath))
+                            msg.setInformativeText("Do you wish to overwrite it in order to save this comment?")
+                            msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+                            retval = msg.exec_()
+                            if(retval == QtWidgets.QMessageBox.Yes):
+                                commentsDict = {self.fileNameTextBox.text() + '_v' + format(self.version, '03d'): self.commentsTextBox.toPlainText()}
+                            else:
+                                return
+                    else:
+                        commentsDict = {self.fileNameTextBox.text() + '_v' + format(self.version, '03d'): self.commentsTextBox.toPlainText()}
+            else:
+                commentsDict = {self.fileNameTextBox.text() + '_v' + format(self.version, '03d'): self.commentsTextBox.toPlainText()}
+
+            with open(commentsPath, "w") as outfile:
+                outfile.write(json.dumps(commentsDict, indent=4))
 
         QtWidgets.QMessageBox.information(self, 
                 'File saved',

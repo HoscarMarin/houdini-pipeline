@@ -103,15 +103,11 @@ class LoadFileApp(QtWidgets.QWidget):
         if(os.path.exists(commentsFile)):
             with open(commentsFile, 'r') as openfile:
                 lines = openfile.read()
-
-                commentsDict = json.loads(lines)
-                self.commentsContentLabel.setText(commentsDict[self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText()])
-    
-        """if os.path.isfile(commentsFile):
-            f = open(commentsFile, 'r')
-            lines = f.read()
-            self.commentsContentLabel.setText(lines)
-        """
+                try:
+                    commentsDict = json.loads(lines)
+                    self.commentsContentLabel.setText(commentsDict[self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText()])
+                except:
+                    pass
 
     def openFile(self):
         filesWithVersion = [f for f in self.filePaths if self.filesList.selectedItems()[0].text() + '_v' in f]
