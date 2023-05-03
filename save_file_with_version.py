@@ -1,6 +1,7 @@
 from PySide2 import QtWidgets, QtCore
 import os, glob
 import hou
+import json
 
 class SaveFileApp(QtWidgets.QWidget):
 
@@ -102,9 +103,19 @@ class SaveFileApp(QtWidgets.QWidget):
             '_v' + format(self.version, '03d') 
         ).replace('\\', '/')
 
-        f = open(saveFilePath + '.txt', 'w')
-        f.write(self.commentsTextBox.toPlainText())
-        f.close()
+        commentsPath = os.path.join(self.filePathTextBox.text(), "comments.json")
+        if(os.path.exists(commentsPath)):
+            with open(commentsPath, 'r') as openfile:
+                lines = openfile.read()
+
+                commentsDict = json.loads(lines)
+                commentsDict[self.fileNameTextBox.text() + '_v' + format(self.version, '03d')] = self.commentsTextBox.toPlainText()
+        else:
+            commentsDict = {self.fileNameTextBox.text() + '_v' + format(self.version, '03d'), self.commentsTextBox.toPlainText()}
+
+        with open(commentsPath, "w") as outfile:
+            outfile.write(json.dumps(commentsDict, indent=4))
+        
 
         hou.hipFile.setName(saveFilePath + '.hip')
         hou.hipFile.save(saveFilePath + '.hip')
@@ -114,8 +125,8 @@ class SaveFileApp(QtWidgets.QWidget):
                 "File name: {0}\n".format(self.fileNameTextBox.text()) +
                 "Version: {0}".format(self.version),
                  QtWidgets.QMessageBox.Ok)
-
-        self.checkDir()
+        
+        self.close()
     
     def browsePath(self):
         folder = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))

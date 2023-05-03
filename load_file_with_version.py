@@ -1,11 +1,14 @@
 from PySide2 import QtWidgets, QtCore, QtGui
 import os, glob
 import hou
+import json
 
 class LoadFileApp(QtWidgets.QWidget):
     def __init__(self):
         super(LoadFileApp, self).__init__()
+        self.filePaths = []
         self.initUI()
+        self.listFiles()
 
     def initUI(self):
         #======================FILEPATH=====================
@@ -72,10 +75,10 @@ class LoadFileApp(QtWidgets.QWidget):
 
     def listFiles(self):
         unique_items = []
-        #Check selected path wasn't deleted
+        
         if(os.path.exists(self.filePathTextBox.text())):
-            files = glob.glob(os.path.join(self.filePathTextBox.text(), "*.hip"))
-            items = [os.path.splitext(os.path.basename(i))[0].rsplit('_v')[0] for i in files]
+            self.filePaths = glob.glob(os.path.join(self.filePathTextBox.text(), "*.hip"))
+            items = [os.path.splitext(os.path.basename(i))[0].rsplit('_v')[0] for i in self.filePaths]
             unique_items = set(items)
         
         self.filesList.clear()
@@ -88,7 +91,7 @@ class LoadFileApp(QtWidgets.QWidget):
             versionfiles = [f for f in files if os.path.basename(f).startswith(self.filesList.selectedItems()[0].text() + '_v')]
         if(versionfiles):
             versions = [os.path.splitext(os.path.basename(v))[0].split('_v')[-1] for v in versionfiles]
-            
+        
         self.versionsCombobox.clear()
         self.versionsCombobox.addItems(versions)
         if(versionfiles):
@@ -96,18 +99,31 @@ class LoadFileApp(QtWidgets.QWidget):
     
     def readComments(self):
         self.commentsContentLabel.setText("")
-        commentsFile = os.path.join(self.filePathTextBox.text(), self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText() +'.txt').replace('\\', '/')
-        if os.path.isfile(commentsFile):
+        commentsFile = os.path.join(self.filePathTextBox.text(), 'comments.json').replace('\\', '/')
+        if(os.path.exists(commentsFile)):
+            with open(commentsFile, 'r') as openfile:
+                lines = openfile.read()
+
+                commentsDict = json.loads(lines)
+                self.commentsContentLabel.setText(commentsDict[self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText()])
+    
+        """if os.path.isfile(commentsFile):
             f = open(commentsFile, 'r')
             lines = f.read()
             self.commentsContentLabel.setText(lines)
+        """
 
     def openFile(self):
-        hipFileName = os.path.join(self.filePathTextBox.text(), self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText() +'.hip').replace('\\', '/')
+        filesWithVersion = [f for f in self.filePaths if self.filesList.selectedItems()[0].text() + '_v' in f]
+        if(len(filesWithVersion) > 0):
+            hipFileName = os.path.join(self.filePathTextBox.text(), self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText() +'.hip').replace('\\', '/')
+        else:
+            hipFileName = os.path.join(self.filePathTextBox.text(), self.filesList.selectedItems()[0].text() +'.hip').replace('\\', '/')
+        
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         hou.hipFile.load(hipFileName)
         QtWidgets.QApplication.restoreOverrideCursor()
-
+        self.close()
 
 #Run app
 app = LoadFileApp()
