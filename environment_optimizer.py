@@ -41,6 +41,7 @@ if __name__ == "__main__":
                 prNode.setFirstInput(displayNode)
                 prNode.setGenericFlag(hou.nodeFlag.Display, True)
                 #prNode.setGenericFlag(hou.nodeFlag.Render, True)
+                prNode.setPosition((displayNode.position().x(), displayNode.position().y() - 1.5))
 
             hou.hipFile.save()
 
