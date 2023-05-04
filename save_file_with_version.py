@@ -86,13 +86,22 @@ class SaveFileApp(QtWidgets.QWidget):
             os.mkdir(self.filePathTextBox.text())
 
         #Check invalid chars
-        invalid_chars = ['\\', '/', ':', '*', '?', '<', '>', '|']
+        invalid_chars = ['\\', '/', ':', '*', '?', '<', '>', '|', "'", '"']
         if(any(char in self.fileNameTextBox.text() for char in invalid_chars)):
             QtWidgets.QMessageBox.warning(self, 
                 'Invalid File Name',
                 "File name cannot contain any of the following charcaters:\n"
-                + "    \\ / : * ? < > |    ",
+                + "    \\ / : * ? < > | ' \"   ",
                  QtWidgets.QMessageBox.Ok,
+            )
+            return
+        
+        if(any(char in self.commentsTextBox.toPlainText() for char in invalid_chars)):
+            QtWidgets.QMessageBox.warning(self, 
+                'Invalid character in comment',
+                "Comments cannot contain any of the following charcaters:\n"
+                + "   \\ / : * ? < > | ' \"   ",
+                QtWidgets.QMessageBox.Ok,
             )
             return
 
@@ -107,6 +116,9 @@ class SaveFileApp(QtWidgets.QWidget):
         hou.hipFile.save(saveFilePath + '.hip')
 
         if(len(self.commentsTextBox.toPlainText()) > 0):
+
+            #Check invalid chars
+            multiLineComment = self.commentsTextBox.toPlainText().replace('\n', '\\n')
             commentsPath = os.path.join(self.filePathTextBox.text(), "comments.json")
             if(os.path.exists(commentsPath)):
                 with open(commentsPath, 'r') as openfile:
@@ -114,7 +126,7 @@ class SaveFileApp(QtWidgets.QWidget):
                     if(len(lines) > 0):
                         try:
                             commentsDict = json.loads(lines)
-                            commentsDict[self.fileNameTextBox.text() + '_v' + format(self.version, '03d')] = self.commentsTextBox.toPlainText()
+                            commentsDict[self.fileNameTextBox.text() + '_v' + format(self.version, '03d')] = multiLineComment
                         except:
                             msg = QtWidgets.QMessageBox()
                             msg.setIcon(QtWidgets.QMessageBox.Information)
@@ -125,13 +137,13 @@ class SaveFileApp(QtWidgets.QWidget):
                             msg.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
                             retval = msg.exec_()
                             if(retval == QtWidgets.QMessageBox.Yes):
-                                commentsDict = {self.fileNameTextBox.text() + '_v' + format(self.version, '03d'): self.commentsTextBox.toPlainText()}
+                                commentsDict = {self.fileNameTextBox.text() + '_v' + format(self.version, '03d'): multiLineComment}
                             else:
                                 return
                     else:
-                        commentsDict = {self.fileNameTextBox.text() + '_v' + format(self.version, '03d'): self.commentsTextBox.toPlainText()}
+                        commentsDict = {self.fileNameTextBox.text() + '_v' + format(self.version, '03d'): multiLineComment}
             else:
-                commentsDict = {self.fileNameTextBox.text() + '_v' + format(self.version, '03d'): self.commentsTextBox.toPlainText()}
+                commentsDict = {self.fileNameTextBox.text() + '_v' + format(self.version, '03d'): multiLineComment}
 
             with open(commentsPath, "w") as outfile:
                 outfile.write(json.dumps(commentsDict, indent=4))

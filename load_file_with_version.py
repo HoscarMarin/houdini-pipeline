@@ -105,7 +105,7 @@ class LoadFileApp(QtWidgets.QWidget):
                 lines = openfile.read()
                 try:
                     commentsDict = json.loads(lines)
-                    self.commentsContentLabel.setText(commentsDict[self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText()])
+                    self.commentsContentLabel.setText(commentsDict[self.filesList.selectedItems()[0].text() + '_v' + self.versionsCombobox.currentText()].replace('\\n', '\n'))
                 except:
                     pass
 
