@@ -49,7 +49,7 @@ Use the ```scriptPath``` text to specify the path the file in your computer.
 
 ## Environment Optimizer
 
-This is a handy tool to optimize file that are to big to even open, or that make the viewport too laggy.
+This is a handy tool to optimize files that are to big to even open, or that make the viewport too laggy.
 
 It uses the hou module to reduce to a percentage the number of polygons shown without the need to open Houdini.
 
