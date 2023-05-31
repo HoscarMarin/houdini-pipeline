@@ -39,7 +39,7 @@ To create a menu bar submenu with these scripts, modify the $HH/MainMenuCommon.x
           <scriptPath>$HOME/houdini19.5/houdini-pipeline/save_file_with_version.py</scriptPath>
       </scriptItem>
     </subMenu>
-    <!--THIS IS IT WHERE IT ENDS-->    
+    <!--THIS IS WHERE IT ENDS-->    
 
   </menuBar>
 </mainMenu>
