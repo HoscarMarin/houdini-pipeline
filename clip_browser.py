@@ -94,7 +94,7 @@ class GifGenerator():
         
             # Copy the viewport frame onto the camera.
             self.viewport.saveViewToCamera(cam_node)
-        
+
             # Reduce the Ortho Width by 65%.
             orthowidth = cam_node.parm("orthowidth").eval()
             cam_node.parm("orthowidth").set(orthowidth*0.65)
