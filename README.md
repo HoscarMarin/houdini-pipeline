@@ -16,6 +16,14 @@ When a clip is selected, the program looks for the agent in the scene (or import
 
 The tool allows for filtering by agent and text searching (e.g.: "Run"). It also adapts to resizing and stays always on top.
 
+### Requirements
+To use this tool, ffmpeg and ffmpeg-python are needed. Also, you should edit the ```RootPath``` variable with the path to your root.
+
+The file system should look something like this, starting from the ```RootPath```:
+
+![file-tree](/docs_imgs/file-tree.png)
+
+Naming convention on the clips is free, but spaces are not welcome😉.
 
 ## Load/Save file with Version
 
