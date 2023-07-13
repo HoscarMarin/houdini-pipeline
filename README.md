@@ -2,13 +2,28 @@
 A collection of scripts for 3D and Houdini projects
 
 
+## Clip Browser
+This tool creates a UI to view agent animations and import Agents with the selected clip.
+
+On the first go, it renders the animation from every .fbx using OpenGL and creates gifs using ffmpeg.
+From then on, the tool consists of a pseudo-file-explorer that plays the animation of a clip when hovered over.
+
+![clip-browser-thumbnail](/docs_imgs/clip-browser-thumbnail.png)
+
+When a clip is selected, the program looks for the agent in the scene (or imports and sets up the agent if it is missing) and adds the clip.
+
+![kachujin-prep](/docs_imgs/kachujin-prep.png)
+
+The tool allows for filtering by agent and text searching (e.g.: "Run"). It also adapts to resizing and stays always on top.
+
+
 ## Load/Save file with Version
 
 This pair of scripts lets the user save comments for the automatic versions.
 
 Comments are stored and read from a .json file in the same folder as the version files.
 
-![load-save-demo.png](/docs_imgs/load-save-demo.png)
+![load-save-demo](/docs_imgs/load-save-demo.png)
 
 ### Recommended use
 Since it expands upon the Open and Save, I personally like them in the menu bar.
