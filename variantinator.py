@@ -226,9 +226,8 @@ class LoadFileApp(QtWidgets.QWidget):
             current_prim.GetAttribute('visibility').Set(UsdGeom.Tokens.invisible)
         
         #export flattened layer
-        with open(self.textboxPath.text() + self.formatOptions.currentText(), 'w') as f:
-            f.write(stage.ExportToString())
-
+        stage.Export(self.textboxPath.text() + self.formatOptions.currentText())
+        
         #reimport file
         stage.Reload()
 
