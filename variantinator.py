@@ -1,7 +1,16 @@
 from PySide2 import QtWidgets, QtCore, QtGui
-from pxr import Usd, UsdGeom, Gf, Sdf
-import os, glob
-#import hou
+from pxr import Usd, UsdGeom
+import os
+
+
+class QHLine(QtWidgets.QFrame):
+    def __init__(self):
+        super(QHLine, self).__init__()
+        self.setMinimumWidth(1)
+        self.setFixedHeight(20)
+        self.setFrameShape(QtWidgets.QFrame.HLine)
+        self.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
 
 class DropList(QtWidgets.QListWidget):
 
@@ -47,20 +56,28 @@ class LoadFileApp(QtWidgets.QWidget):
         self.labelFiles = QtWidgets.QLabel("File Paths")
         self.labelFiles.setAlignment(QtCore.Qt.AlignCenter)
         self.filePathsList = DropList(self)
-        self.filePathsList.fileDropped.connect(self.filesDropped)
-        self.filePathsList.clicked.connect(self.loadFiles)
+        self.filePathsList.setStyleSheet(r"QListWidget::item:selected:!active {color: white; background: #00000000; }")
+        self.filePathsList.fileDropped.connect(self.fillLists)
         self.filePathButton = QtWidgets.QPushButton("Load")
         self.filePathButton.clicked.connect(self.loadFiles)
+        self.filePathClearButton = QtWidgets.QPushButton("Clear")
+        self.filePathClearButton.clicked.connect(self.clearFiles)
+
+        
+        self.filePathButtonsHLayout = QtWidgets.QHBoxLayout()
+        self.filePathButtonsHLayout.addWidget(self.filePathButton)
+        self.filePathButtonsHLayout.addWidget(self.filePathClearButton)
 
         self.filePathVLayout = QtWidgets.QVBoxLayout()
         self.filePathVLayout.addWidget(self.labelFiles)
         self.filePathVLayout.addWidget(self.filePathsList)
-        self.filePathVLayout.addWidget(self.filePathButton)
+        self.filePathVLayout.addLayout(self.filePathButtonsHLayout)
 
 
         self.labelVariants = QtWidgets.QLabel("Variant Names")
         self.labelVariants.setAlignment(QtCore.Qt.AlignCenter)
         self.variantsList = QtWidgets.QListWidget(self)
+        self.variantsList.setStyleSheet(r"QListWidget::item:selected:!active {color: white; background: #00000000;}")
         self.variantsList.setIconSize(QtCore.QSize(72, 72))
         self.resetButton = QtWidgets.QPushButton("Reset Names")
         self.resetButton.clicked.connect(self.resetNames)
@@ -87,34 +104,39 @@ class LoadFileApp(QtWidgets.QWidget):
         self.formatOptions.addItem(".usda")
         self.formatOptions.addItem(".usdc")
 
-        self.buttonBuild = QtWidgets.QPushButton("Build File")
-        self.buttonBuild.clicked.connect(self.builtVariantsFile)
+        self.buttonBuildRef = QtWidgets.QPushButton("Build File")
+        self.buttonBuildRef.clicked.connect(self.builtVariantsFileRef)
+        self.buttonBuildFlat = QtWidgets.QPushButton("Build Flattened File")
+        self.buttonBuildFlat.clicked.connect(self.builtVariantsFileFlat)
         
         self.buildHLayout = QtWidgets.QHBoxLayout()
         self.buildHLayout.addWidget(self.buttonBrowse)
         self.buildHLayout.addWidget(self.textboxPath)
         self.buildHLayout.addWidget(self.formatOptions)
-        self.buildHLayout.addWidget(self.buttonBuild)
+
+        self.buildButtonsHLayout = QtWidgets.QHBoxLayout()
+        self.buildButtonsHLayout.addWidget(self.buttonBuildRef)
+        self.buildButtonsHLayout.addWidget(self.buttonBuildFlat)
         
-        self.flattenCheckBox = QtWidgets.QCheckBox("Flatten Layers")
+        #self.flattenCheckBox = QtWidgets.QCheckBox("Flatten")
         self.filePathVLayout = QtWidgets.QVBoxLayout()
-        self.filePathVLayout.addWidget(self.flattenCheckBox)
+        #self.filePathVLayout.addWidget(self.flattenCheckBox)
         self.filePathHLayout.addLayout(self.filePathVLayout)
 
-        #======================OPEN======================
+        self.buildLabel = QtWidgets.QLabel("Build File")
+        self.buildLabel.setAlignment(QtCore.Qt.AlignCenter)
+        #==================GENERAL LAYOUT=====================
 
         self.mainVLayout = QtWidgets.QVBoxLayout()
         self.mainVLayout.addLayout(self.filePathHLayout)
+        self.mainVLayout.addWidget(QHLine())
+        #self.mainVLayout.addWidget(self.buildLabel)
         self.mainVLayout.addLayout(self.buildHLayout)
+        self.mainVLayout.addLayout(self.buildButtonsHLayout)
         
         self.setLayout(self.mainVLayout)
         self.setMinimumSize(500, 150)
-        self.setWindowTitle("Variant-inator")
-
-    def AddReferenceToGeometry(stage, path, file):
-        geom = UsdGeom.Xform.Define(stage, path)
-        geom.GetPrim().GetReferences().AddReference(file)
-        return geom
+        self.setWindowTitle("Variantinator")
     
     def browseFile(self):
         dialog = QtWidgets.QFileDialog()
@@ -136,7 +158,12 @@ class LoadFileApp(QtWidgets.QWidget):
             itemV.setStatusTip(variant_name)
             itemV.setFlags(itemV.flags() | QtCore.Qt.ItemIsEditable)
 
-    def filesDropped(self, l):
+    def clearFiles(self):
+        self.variantsList.clear()
+        self.filePathsList.clear()
+
+
+    def fillLists(self, l):
         for url in l:
             if os.path.exists(url):
                 fileInfo = QtCore.QFileInfo(url)
@@ -155,69 +182,74 @@ class LoadFileApp(QtWidgets.QWidget):
                 itemV.setStatusTip(url)
                 itemV.setFlags(itemV.flags() | QtCore.Qt.ItemIsEditable)
 
-
     def loadFiles(self):
         filter = "USD (*.usd);;All files (*.*)"
         file_name = QtWidgets.QFileDialog()
         file_name.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
         names = file_name.getOpenFileNames(self, "Open files", "C\\Desktop", filter)
-        for url in names[0]:
-            if os.path.exists(url):
-                fileInfo = QtCore.QFileInfo(url)
-                iconProvider = QtWidgets.QFileIconProvider()
-                icon = iconProvider.icon(fileInfo)
-                pixmap = icon.pixmap(32, 32)                
-                icon = QtGui.QIcon(pixmap)
-
-                item = QtWidgets.QListWidgetItem(icon, url, self.filePathsList)
-                item.setIcon(icon)        
-                item.setStatusTip(url)  
-
-    def builtVariantsFile(self):
+        self.fillLists(names[0])
 
 
+    def builtVariantsFileRef(self):
+        #Create stage and root prim
         stage = Usd.Stage.CreateNew(self.textboxPath.text() + self.formatOptions.currentText())
         root = stage.DefinePrim('/root', 'Xform')
-        root = stage.DefinePrim('/variants', 'Xform')
-
-        if(self.flattenCheckBox.isChecked()):
-            #import each file as a reference
-            for x in range(self.filePathsList.count()):
-                                                #maybe another path is better
-                current_prim = stage.DefinePrim(f'/variants/{self.variantsList.item(x).text()}', 'Xform')
-                current_prim.GetReferences().AddReference(self.filePathsList.item(x).text())
-                #TODO: Que no aparezcan los robots cuando abres el archivo. 
-                #Probar poniendo la visibility a false y luego a true en la variante    
-                current_prim.GetAttribute('visibility').Set(UsdGeom.Tokens.invisible)
-            
-            #export flattened layer
-            with open(self.textboxPath.text() + self.formatOptions.currentText(), 'w') as f:
-                f.write(stage.ExportToString())
-
-            #reimport file
-            stage.Reload()
-            #stage = Usd.Stage.Open(self.textboxPath.text() + self.formatOptions.currentText())
-
-        root = stage.GetPrimAtPath('/root')
+        #add variant set called model
         variant_set = root.GetVariantSets().AddVariantSet('model')
         for x in range(self.filePathsList.count()):
-            #Previously, variant name was the file name
-            #variant_name = os.path.splitext(os.path.basename(self.filePathsList.item(x).text()))[0]
+            #Create a variant with the name provided
             variant_name = self.variantsList.item(x).text()
             variant_set.AddVariant(variant_name)
             variant_set.SetVariantSelection(variant_name)
+
+            #Add reference to geo and mats
             with variant_set.GetVariantEditContext():
-                if(self.flattenCheckBox.isChecked()):
-                    root.GetPrim().GetReferences().AddInternalReference(f'/variants/{self.variantsList.item(x).text()}')
-                    root.GetPrim().GetAttribute('visibility').Set(UsdGeom.Tokens.visible)
-                else:
-                    root.GetPrim().GetReferences().AddReference(self.filePathsList.item(x).text())
+                root.GetPrim().GetReferences().AddReference(self.filePathsList.item(x).text())
         
         #Save to file
-        if(self.flattenCheckBox.isChecked()):
-            stage.GetRootLayer().Save()  #Flattened version
-        else:
-            stage.GetRootLayer().Save()
+        stage.GetRootLayer().Save()
+
+    def builtVariantsFileFlat(self):
+        #Create stage and root prim
+        stage = Usd.Stage.CreateNew(self.textboxPath.text() + self.formatOptions.currentText())
+        root = stage.DefinePrim('/root', 'Xform')
+
+        #Define the container for all the files
+        stage.DefinePrim('/variants', 'Xform')
+
+        #import each file as a reference
+        for x in range(self.filePathsList.count()):
+            #import file to '/variants/varian_name' but if you want them any other place, just change this paht
+            current_prim = stage.DefinePrim(f'/variants/{self.variantsList.item(x).text()}', 'Xform')
+            current_prim.GetReferences().AddReference(self.filePathsList.item(x).text())
+            #make them invisible so they don't appear at first glance
+            current_prim.GetAttribute('visibility').Set(UsdGeom.Tokens.invisible)
+        
+        #export flattened layer
+        with open(self.textboxPath.text() + self.formatOptions.currentText(), 'w') as f:
+            f.write(stage.ExportToString())
+
+        #reimport file
+        stage.Reload()
+
+        #get root, if file was not flattened, it should be empty
+        root = stage.GetPrimAtPath('/root')
+        #add variant set called model
+        variant_set = root.GetVariantSets().AddVariantSet('model')
+        for x in range(self.filePathsList.count()):
+            #Create a variant with the name provided
+            variant_name = self.variantsList.item(x).text()
+            variant_set.AddVariant(variant_name)
+            variant_set.SetVariantSelection(variant_name)
+
+            #Add reference to geo and mats
+            with variant_set.GetVariantEditContext():
+                #If flattened, geo and mats are already in the file, so we use an internal reference and make them visible
+                root.GetPrim().GetReferences().AddInternalReference(f'/variants/{self.variantsList.item(x).text()}')
+                root.GetPrim().GetAttribute('visibility').Set(UsdGeom.Tokens.visible)
+        
+        #Save to file
+        stage.GetRootLayer().Save()
 
 #Run app
 app = LoadFileApp()
