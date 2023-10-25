@@ -25,6 +25,21 @@ The file system should look something like this, starting from the ```RootPath``
 
 Naming convention on the clips is free, but spaces are not welcome😉.
 
+## Variantinator (USD)
+
+This script is used to tidy things up, specially legacy models. If you have a bunch of models with the same theme, let's say Trees or Robots, and you want them to be in the same file, variants are your friend.
+
+![robots-lineup](/docs_imgs/robots.png)
+_Models by YuryTheCreator on Sketchfab_
+
+Variantinator accepts file drag and drop in the left panel and automatically fills up the 'variant names' list. You then select a file path and variantinator creates a file containing all the files as variants.
+
+There 2 options to Build the new file:
+- Build File, which imports the files as references.
+- Build Flattened File, to include all the files inside the new one, so you can take it anywhere and everything is still in.
+
+![variantinator-demo](/docs_imgs/variantinator.png)
+
 ## Load/Save file with Version
 
 This pair of scripts lets the user save comments for the automatic versions.
